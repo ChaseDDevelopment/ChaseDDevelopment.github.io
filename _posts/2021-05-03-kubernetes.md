@@ -86,7 +86,7 @@ ansible-playbook ~/ansible/playbooks/resize-lvm.yml --user serveradmin --ask-bec
 ```
 
 > This should provision all the Ubuntu Servers and have them prepped for a Kubernetes cluster installation
-> {: .prompt-tip}
+{: .prompt-tip}
 
 ## 6. Install Kubectl on your local dev machine: [Install Kubernetes Tools](https://kubernetes.io/docs/tasks/tools/)
 
@@ -159,58 +159,58 @@ ansible-playbook ~/ansible/playbooks/resize-lvm.yml --user serveradmin --ask-bec
 4.  Modify the `HAProxy` configuration file located at `/etc/haproxy/haproxy.cfg` on both nodes
 
     ```cfg
-    # /etc/haproxy/haproxy.cfg
-    #---------------------------------------------------------------------
-    # Global settings
-    #---------------------------------------------------------------------
-    global
-        log /dev/log local0
-        log /dev/log local1 notice
-        daemon
+        # /etc/haproxy/haproxy.cfg
+        #---------------------------------------------------------------------
+        # Global settings
+        #---------------------------------------------------------------------
+        global
+            log /dev/log local0
+            log /dev/log local1 notice
+            daemon
 
-    #---------------------------------------------------------------------
-    # common defaults that all the 'listen' and 'backend' sections will
-    # use if not designated in their block
-    #---------------------------------------------------------------------
-    defaults
-        mode                    http
-        log                     global
-        option                  httplog
-        option                  dontlognull
-        option http-server-close
-        option forwardfor       except 127.0.0.0/8
-        option                  redispatch
-        retries                 1
-        timeout http-request    10s
-        timeout queue           20s
-        timeout connect         5s
-        timeout client          20s
-        timeout server          20s
-        timeout http-keep-alive 10s
-        timeout check           10s
+        #---------------------------------------------------------------------
+        # common defaults that all the 'listen' and 'backend' sections will
+        # use if not designated in their block
+        #---------------------------------------------------------------------
+        defaults
+            mode                    http
+            log                     global
+            option                  httplog
+            option                  dontlognull
+            option http-server-close
+            option forwardfor       except 127.0.0.0/8
+            option                  redispatch
+            retries                 1
+            timeout http-request    10s
+            timeout queue           20s
+            timeout connect         5s
+            timeout client          20s
+            timeout server          20s
+            timeout http-keep-alive 10s
+            timeout check           10s
 
-    #---------------------------------------------------------------------
-    # apiserver frontend which proxys to the masters
-    #---------------------------------------------------------------------
-    frontend apiserver
-        bind *:${APISERVER_DEST_PORT}
-        mode tcp
-        option tcplog
-        default_backend apiserver
+        #---------------------------------------------------------------------
+        # apiserver frontend which proxys to the masters
+        #---------------------------------------------------------------------
+        frontend apiserver
+            bind *:${APISERVER_DEST_PORT}
+            mode tcp
+            option tcplog
+            default_backend apiserver
 
-    #---------------------------------------------------------------------
-    # round robin balancing for apiserver
-    #---------------------------------------------------------------------
-    backend apiserver
-        option httpchk GET /healthz
-        http-check expect status 200
-        mode tcp
-        option ssl-hello-chk
-        balance     roundrobin
-            server ${HOST1_ID} ${HOST1_ADDRESS}:${APISERVER_SRC_PORT} check fall 3 rise 2 # for me ${HOST1_ID} is kube_control_plane1. Add all your control Planes here.
-            server ${HOST2_ID} ${HOST2_ADDRESS}:${APISERVER_SRC_PORT} check fall 3 rise 2
-            server ${HOST3_ID} ${HOST3_ADDRESS}:${APISERVER_SRC_PORT} check fall 3 rise 2
-            # [...]
+        #---------------------------------------------------------------------
+        # round robin balancing for apiserver
+        #---------------------------------------------------------------------
+        backend apiserver
+            option httpchk GET /healthz
+            http-check expect status 200
+            mode tcp
+            option ssl-hello-chk
+            balance     roundrobin
+                server ${HOST1_ID} ${HOST1_ADDRESS}:${APISERVER_SRC_PORT} check fall 3 rise 2 # for me ${HOST1_ID} is kube_control_plane1. Add all your control Planes here.
+                server ${HOST2_ID} ${HOST2_ADDRESS}:${APISERVER_SRC_PORT} check fall 3 rise 2
+                server ${HOST3_ID} ${HOST3_ADDRESS}:${APISERVER_SRC_PORT} check fall 3 rise 2
+                # [...]
     ```
 
     <hr>
@@ -311,51 +311,52 @@ ansible-playbook ~/ansible/playbooks/resize-lvm.yml --user serveradmin --ask-bec
 
 ## 8. Intiliaze the first control plane on the cluster and copy the contents of the output to a text file for later use.
 
-    ```bash
-    sudo kubeadm init --control-plane-endpoint "${LOAD_BALANCER_VIP}:${LOAD_BALANCER_PORT}" --upload-certs --pod-network-cidr 192.168.0.0/16
-    ```
+```bash
+sudo kubeadm init --control-plane-endpoint "${LOAD_BALANCER_VIP}:${LOAD_BALANCER_PORT}" --upload-certs --pod-network-cidr 192.168.0.0/16
+```
 
-     <hr>
+ <hr>
 
-     * ${LOAD_BALANCER_VIP} - This is the Virtual IP address of `keepalived` assigned above.
-     * ${LOAD_BALANCER_PORT} - This is the API Server port assigned above (`6443`).
+- ${LOAD_BALANCER_VIP} - This is the Virtual IP address of `keepalived` assigned above.
+- ${LOAD_BALANCER_PORT} - This is the API Server port assigned above (`6443`).
 
-    ```bash
-    Your Kubernetes control-plane has initialized successfully!
+  ```bash
+  Your Kubernetes control-plane has initialized successfully!
 
-    To start using your cluster, you need to run the following as a regular user:
+  To start using your cluster, you need to run the following as a regular user:
 
-    mkdir -p $HOME/.kube
-    sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-    sudo chown $(id -u):$(id -g) $HOME/.kube/config
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
-    Alternatively, if you are the root user, you can run:
+  Alternatively, if you are the root user, you can run:
 
-    export KUBECONFIG=/etc/kubernetes/admin.conf
+  export KUBECONFIG=/etc/kubernetes/admin.conf
 
-    You should now deploy a pod network to the cluster.
-    Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
-    https://kubernetes.io/docs/concepts/cluster-administration/addons/
+  You should now deploy a pod network to the cluster.
+  Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
 
-    You can now join any number of the control-plane node running the following command on each as root:
+  You can now join any number of the control-plane node running the following command on each as root:
 
-    kubeadm join ${LOAD_BALANCER_IP}:${LOAD_BALANCER_PORT} --token <token> \
-      --discovery-token-ca-cert-hash <discovery-token> \
-      --control-plane --certificate-key <certificate key>
+  kubeadm join ${LOAD_BALANCER_IP}:${LOAD_BALANCER_PORT} --token <token> \
+    --discovery-token-ca-cert-hash <discovery-token> \
+    --control-plane --certificate-key <certificate key>
 
-    Please note that the certificate-key gives access to cluster sensitive data, keep it secret!
-    As a safeguard, uploaded-certs will be deleted in two hours; If necessary, you can use
-    "kubeadm init phase upload-certs --upload-certs" to reload certs afterward.
+  Please note that the certificate-key gives access to cluster sensitive data, keep it secret!
+  As a safeguard, uploaded-certs will be deleted in two hours; If necessary, you can use
+  "kubeadm init phase upload-certs --upload-certs" to reload certs afterward.
 
-    Then you can join any number of worker nodes by running the following on each as root:
+  Then you can join any number of worker nodes by running the following on each as root:
 
-    kubeadm join ${LOAD_BALANCER_IP}:${LOAD_BALANCER_PORT} --token <token> \
-      --discovery-token-ca-cert-hash <discovery-token>
-    ```
+  kubeadm join ${LOAD_BALANCER_IP}:${LOAD_BALANCER_PORT} --token <token> \
+    --discovery-token-ca-cert-hash <discovery-token>
+  ```
 
-    > This is the output fromt he Kubeadm init command. Copy this to a text file for later use.
+  > This is the output fromt he Kubeadm init command. Copy this to a text file for later use.
 
-    <h3>Do not Install your CNI to the cluster yet. I've tried this multiple times and it seems to not let the other nodes join the cluster. If it works for you, great. For me, I had to wait until the whole cluster is bootstrapped before applying the CNI. (Shown in a later step)</h3>
+> Do not Install your CNI to the cluster yet. I've tried this multiple times and it seems to not let the other nodes join the cluster. If it works for you, great. For me, I had to wait until the whole cluster is bootstrapped before applying the CNI. (Shown in a later step)
+{: .prompt-danger}
 
 ## 9. Using the first three lines copy the clusters new `~/.kube/config` to the first control plane's home directory for access
 
