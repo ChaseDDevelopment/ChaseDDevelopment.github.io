@@ -320,38 +320,38 @@ sudo kubeadm init --control-plane-endpoint "${LOAD_BALANCER_VIP}:${LOAD_BALANCER
 - ${LOAD_BALANCER_VIP} - This is the Virtual IP address of `keepalived` assigned above.
 - ${LOAD_BALANCER_PORT} - This is the API Server port assigned above (`6443`).
 
-  ```bash
-  Your Kubernetes control-plane has initialized successfully!
+```bash
+Your Kubernetes control-plane has initialized successfully!
 
-  To start using your cluster, you need to run the following as a regular user:
+To start using your cluster, you need to run the following as a regular user:
 
-  mkdir -p $HOME/.kube
-  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
-  Alternatively, if you are the root user, you can run:
+Alternatively, if you are the root user, you can run:
 
-  export KUBECONFIG=/etc/kubernetes/admin.conf
+export KUBECONFIG=/etc/kubernetes/admin.conf
 
-  You should now deploy a pod network to the cluster.
-  Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
-  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+https://kubernetes.io/docs/concepts/cluster-administration/addons/
 
-  You can now join any number of the control-plane node running the following command on each as root:
+You can now join any number of the control-plane node running the following command on each as root:
 
-  kubeadm join ${LOAD_BALANCER_IP}:${LOAD_BALANCER_PORT} --token <token> \
+kubeadm join ${LOAD_BALANCER_IP}:${LOAD_BALANCER_PORT} --token <token> \
     --discovery-token-ca-cert-hash <discovery-token> \
     --control-plane --certificate-key <certificate key>
 
-  Please note that the certificate-key gives access to cluster sensitive data, keep it secret!
-  As a safeguard, uploaded-certs will be deleted in two hours; If necessary, you can use
+Please note that the certificate-key gives access to cluster sensitive data, keep it secret!
+As a safeguard, uploaded-certs will be deleted in two hours; If necessary, you can use
   "kubeadm init phase upload-certs --upload-certs" to reload certs afterward.
 
-  Then you can join any number of worker nodes by running the following on each as root:
+Then you can join any number of worker nodes by running the following on each as root:
 
-  kubeadm join ${LOAD_BALANCER_IP}:${LOAD_BALANCER_PORT} --token <token> \
+kubeadm join ${LOAD_BALANCER_IP}:${LOAD_BALANCER_PORT} --token <token> \
     --discovery-token-ca-cert-hash <discovery-token>
-  ```
+```
 
   > This is the output fromt he Kubeadm init command. Copy this to a text file for later use.
 
@@ -360,53 +360,60 @@ sudo kubeadm init --control-plane-endpoint "${LOAD_BALANCER_VIP}:${LOAD_BALANCER
 
 ## 9. Using the first three lines copy the clusters new `~/.kube/config` to the first control plane's home directory for access
 
-    ```bash
-    mkdir -p $HOME/.kube
-    sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-    sudo chown $(id -u):$(id -g) $HOME/.kube/config
-    ```
+```bash
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+```
 
 ## 10. Join the other two control planes with the first kubeadm command provided from the output. You will need to add `sudo` to these commands, it doesn't work without it.
 
-    ```bash
-    sudo kubeadm join ${LOAD_BALANCER_IP}:${LOAD_BALANCER_PORT} --token <token> \
-      --discovery-token-ca-cert-hash <discovery-token> \
-      --control-plane --certificate-key <certificate key>
-    ```
+```bash
+sudo kubeadm join ${LOAD_BALANCER_IP}:${LOAD_BALANCER_PORT} --token <token> \
+  --discovery-token-ca-cert-hash <discovery-token> \
+  --control-plane --certificate-key <certificate key>
+```
 
 ## 11. Join the worker nodes and storage nodes with the second kubeadm command provided by the output. You will need to add `sudo` to these commands, it doesn't work without it.
 
-    ```bash
-    kubeadm join ${LOAD_BALANCER_IP}:${LOAD_BALANCER_PORT} --token <token> \
-      --discovery-token-ca-cert-hash <discovery-token>
-    ```
+```bash
+kubeadm join ${LOAD_BALANCER_IP}:${LOAD_BALANCER_PORT} --token <token> \
+  --discovery-token-ca-cert-hash <discovery-token>
+```
 
 ## 12. Apply the CNI (Container Network Interface) for your cluster.
 
-    ```bash
-    kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
-    ```
+```bash
+kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+```
 
 ## 13. Copy your kube config to your local machine from the original control plane.
 
-    ```bash
-    sudo cat ~/.kube/config
-    ```
+```bash
+sudo cat ~/.kube/config
+```
 
-## 14. You should now have a fully working kubernetes cluster, things to consider are downloading `metallb`, `rancher`, and `longhorn` to make your cluster a little more user friendly. These Guides can be found from [TechnoTim](https://techno-tim.github.io/)
+>14. You should now have a fully working kubernetes cluster, things to consider are downloading `metallb`, `rancher`, and `longhorn` to make your cluster a little more user friendly. These Guides can be found from [TechnoTim](https://techno-tim.github.io/)
+{: .prompt-tip}
 
 ## 15. If you are going to install Rancher on this cluster, I noticed that the schedular and conroller manager said "unhealthy". They seem to work as normal, but a fix for this is as follows:
 
-    1. ```bash
-        sudo nano /etc/kubernetes/manifest/kube-scheduler.yaml
-       ```
-       and clear the line (spec->containers->command) containing this phrase: `- --port=0`
-    2. ```bash
-        sudo nano /etc/kubernetes/manifest/kube-controller.yaml
-       ```
-       and clear the line (spec->containers->command) containing this phrase: `- --port=0`
-    3. ```bash
-        sudo systemctl restart kubelet.service
-       ```
+1. 
+        
+  ```bash
+  sudo nano /etc/kubernetes/manifest/kube-scheduler.yaml
+  ```
+and clear the line (spec->containers->command) containing this phrase: `- --port=0`
+
+2. 
+  ```bash
+  sudo nano /etc/kubernetes/manifest/kube-controller.yaml
+  ```
+and clear the line (spec->containers->command) containing this phrase: `- --port=0`
+
+3. 
+  ```bash
+  sudo systemctl restart kubelet.service
+  ```
 
 ### Do this on all _THREE_ Control Planes, and it should resolve the issue.
