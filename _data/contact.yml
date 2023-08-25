@@ -2,6 +2,7 @@
 
 - type: github
   icon: "fab fa-github"
+  url: "https://github.com/ChaseDDevelopment"
 - type: linkedin
   icon: "fab fa-linkedin"
   url: "https://www.linkedin.com/in/ChaseDubauskas"
