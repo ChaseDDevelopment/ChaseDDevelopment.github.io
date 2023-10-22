@@ -3,7 +3,8 @@
   "version": "1.0.1",
   "description": "Homelab Documentation site",
   "scripts": {
-    "release": "standard-version"
+    "release": "standard-version",
+    "postrelease": "git push -o ci.skip && git push origin v$npm_package_version"
   },
   "devDependencies": {
     "standard-version": "9.5.0"
