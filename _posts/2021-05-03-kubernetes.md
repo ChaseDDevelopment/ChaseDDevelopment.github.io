@@ -1,17 +1,10 @@
----
-title: How to setup a highly-available Kubernetes cluster on Bare-Metal
-date: 2021-05-03 12:00:00 -0500
-categories: [Homelab, Kubernetes]
-tags: [servers, ubuntu, linux, kubernetes, high-availability, ha, docker] # TAG names should always be lowercase
----
-
 # Setting up Kubernetes in a highly-available configuration
 
 This is a guide to provision a Highly Available Kubernetes Cluster (K8s) on v1.21
 
 <h1>This is my Personal Homelab Kubernetes Cluster, and I've taken around 40 Bookmarked webpages and condensed them into one guide.</h1>
 
-This Kubernetes cluster uses a Multi-Master stacked topology. I stuggled for a few days to find all the steps that would work for one installation on bare metal, and had to take some pieces from several places to get this to work the way it does. This cluster will be using [Calico](https://www.projectcalico.org/) as it's Container Network Interface.
+This Kubernetes cluster uses a Multi-Master stacked topology. I struggled for a few days to find all the steps that would work for one installation on bare metal and had to take some pieces from several places to get this to work the way it does. This cluster will be using [Calico](https://www.projectcalico.org/) as its Container Network Interface.
 
 Please don't hesitate to raise any issues with the guide, I'll update it, and try to help where I can!
 
@@ -24,12 +17,12 @@ Please don't hesitate to raise any issues with the guide, I'll update it, and tr
 - 4 Worker Node Servers with minimum 4 cores, and 8GiB of RAM, 32GiB Storage
 - (Optional) 4 Storage Node Servers with minimum 4 cores, 8GiB of RAM, 100GiB Storage
 
-These Values are just what work best in _MY_ Homelab, and the resources I have available, you can modify them accordingly, just make sure they fall within
+These Values are just what works best in _MY_ Homelab, and the resources I have available, you can modify them accordingly, just make sure they fall within
 [Kubernetes minimum Requirements](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#before-you-begin)
 
-The reason I say 9-13 Servers, is the extra 4 are Storage nodes. These nodes are setup with 100GiB each because I planned to use Longhorn as taught in TechnoTim's Guides, so you can do this without the additional storage nodes, or use them as more worker nodes if you don't plan on using storage nodes.
+The reason I say 9-13 Servers, is the extra 4 are Storage nodes. These nodes are set up with 100GiB each because I planned to use Longhorn as taught in TechnoTim's Guides, so you can do this without the additional storage nodes, or use them as more worker nodes if you don't plan on using storage nodes.
 
-## 2. Setup an additional user on each Ubuntu Server with Sudo privelages (so that the machine can be managed by ansible):
+## 2. Setup an additional user on each Ubuntu Server with Sudo privileges (so that the machine can be managed by Ansible):
 
 ```bash
  sudo adduser serveradmin
@@ -58,7 +51,7 @@ ssh-copy-id {user}@{IP Address} # Do this for both kube & serveradmin
 ```bash
 sudo apt update
 sudo apt install ansible
-sudo apt install sshpass # This is needed if you are using password based authentication.
+sudo apt install sshpass # This is needed if you are using password-based authentication.
 ```
 
 [Ansible Galaxy Community General](https://galaxy.ansible.com/community/general)
@@ -73,7 +66,7 @@ ansible-galaxy collection install community.general
 ansible-galaxy install gantsign.oh-my-zsh
 ```
 
-## 5. Provision the 13 Servers using ansible using TechnoTim's Ansible Files. the Host file `kuber` has all my kubernetes hosts. [TechnoTim Ansible](https://github.com/techno-tim/ansible-homelab)
+## 5. Provision the 13 Servers using Ansible using TechnoTim's Ansible Files. The host file `kuber` has all my Kubernetes hosts. [TechnoTim Ansible](https://github.com/techno-tim/ansible-homelab)
 
 ```bash
 ansible-playbook ~/ansible/playbooks/apt.yml --user serveradmin --ask-become-pass -i ~/ansible/inventory/kuber
@@ -90,9 +83,9 @@ ansible-playbook ~/ansible/playbooks/resize-lvm.yml --user serveradmin --ask-bec
 
 ## 6. Install Kubectl on your local dev machine: [Install Kubernetes Tools](https://kubernetes.io/docs/tasks/tools/)
 
-## 7. Create the highly-available load-balancer with a virtual IP address for access to the kubernetes API Server endpoint
+## 7. Create the highly-available load-balancer with a virtual IP address for access to the Kubernetes API Server endpoint
 
-1.  ssh into both load balancer nodes, and install `keepalived` and `haproxy`
+1. SSH into both load balancer nodes, and install `keepalived` and `haproxy`
 
     ```bash
     sudo apt install keepalived haproxy
@@ -132,13 +125,13 @@ ansible-playbook ~/ansible/playbooks/resize-lvm.yml --user serveradmin --ask-bec
 
     <hr>
 
-    - ${VI\_#} - This is the instance number. Change it on both load balancers. for simplicity I made mine `VI_1` on the "Master" and `VI_2` on the "Backup".
-    - ${STATE} - This value Will be `MASTER` on the first loadbalancer and `BACKUP` on the second loadbalancer.
+    - ${VI\_#} - This is the instance number. Change it on both load balancers. for simplicity, I made mine `VI_1` on the "Master" and `VI_2` on the "Backup".
+    - ${STATE} - This value Will be `MASTER` on the first load balancer and `BACKUP` on the second load balancer.
     - ${INTERFACE} - This is the physical network interface on the Ubuntu Server, change accordingly. Mine is `ens18`
-    - ${ROUTER_ID} - This is a random value, just make sure the value on the "Master" loadbalancer is lower. e.g `51` and `52` on the "Backup".
+    - ${ROUTER_ID} - This is a random value, just make sure the value on the "Master" load balancer is lower. e.g. `51` and `52` on the "Backup".
     - ${PRIORITY} - This is a random value, just make the value on the "Master" load balancer is lower. e.g `101` and `200` on the "Backup".
-    - ${AUTH_PASS} - This is a random password, use any generator and avoid special characters. This will be the same on both loadbalancers.
-    - ${APISERVER_VIP} - This is the virtual IP address that both load balancers will be sharing. Change it based on your local network and available address'. Make sure this address is not within the DHCP servers range.
+    - ${AUTH_PASS} - This is a random password, use any generator and avoid special characters. This will be the same on both load balancers.
+    - ${APISERVER_VIP} - This is the virtual IP address that both load balancers will be sharing. Change it based on your local network and available addresses. Make sure this address is not within the DHCP server's range.
 
 3.  Add the script that `keepalived` uses at `/etc/keepalived/check_apiserver.sh` on both nodes. the `APISERVER_VIP` is the Virtual IP assigned to `keepalived` above and `APISERVER_DEST_PORT` is `6443`. (Thats the default API Server port)
 
@@ -261,7 +254,7 @@ ansible-playbook ~/ansible/playbooks/resize-lvm.yml --user serveradmin --ask-bec
         sudo sysctl --system
         ```
 
-    4.  Install Docker engine on all the nodes and mark the packages as "held back".
+    4.  Install the Docker engine on all the nodes and mark the packages as "held back".
 
         [Docker Install](https://docs.docker.com/engine/install/)
 
@@ -285,7 +278,7 @@ ansible-playbook ~/ansible/playbooks/resize-lvm.yml --user serveradmin --ask-bec
         EOF
         ```
 
-        Then Restart Docker and enable on boot.
+        Then Restart Docker and enable it on boot.
 
         ```bash
         sudo systemctl enable docker
@@ -309,7 +302,7 @@ ansible-playbook ~/ansible/playbooks/resize-lvm.yml --user serveradmin --ask-bec
 
         ```
 
-## 8. Intiliaze the first control plane on the cluster and copy the contents of the output to a text file for later use.
+## 8. Initialize the first control plane on the cluster and copy the contents of the output to a text file for later use.
 
 ```bash
 sudo kubeadm init --control-plane-endpoint "${LOAD_BALANCER_VIP}:${LOAD_BALANCER_PORT}" --upload-certs --pod-network-cidr 192.168.0.0/16
@@ -321,7 +314,7 @@ sudo kubeadm init --control-plane-endpoint "${LOAD_BALANCER_VIP}:${LOAD_BALANCER
 - ${LOAD_BALANCER_PORT} - This is the API Server port assigned above (`6443`).
 
 ```bash
-Your Kubernetes control-plane has initialized successfully!
+Your Kubernetes control plane has initialized successfully!
 
 To start using your cluster, you need to run the following as a regular user:
 
@@ -337,14 +330,14 @@ You should now deploy a pod network to the cluster.
 Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
 https://kubernetes.io/docs/concepts/cluster-administration/addons/
 
-You can now join any number of the control-plane node running the following command on each as root:
+You can now join any number of the control-plane nodes running the following command on each as root:
 
 kubeadm join ${LOAD_BALANCER_IP}:${LOAD_BALANCER_PORT} --token <token> \
     --discovery-token-ca-cert-hash <discovery-token> \
     --control-plane --certificate-key <certificate key>
 
-Please note that the certificate-key gives access to cluster sensitive data, keep it secret!
-As a safeguard, uploaded-certs will be deleted in two hours; If necessary, you can use
+Please note that the certificate-key gives access to cluster-sensitive data, keep it secret!
+As a safeguard, uploaded certs will be deleted in two hours; If necessary, you can use
   "kubeadm init phase upload-certs --upload-certs" to reload certs afterward.
 
 Then you can join any number of worker nodes by running the following on each as root:
@@ -353,9 +346,9 @@ kubeadm join ${LOAD_BALANCER_IP}:${LOAD_BALANCER_PORT} --token <token> \
     --discovery-token-ca-cert-hash <discovery-token>
 ```
 
-  > This is the output fromt he Kubeadm init command. Copy this to a text file for later use.
+  > This is the output from the Kubeadm init command. Copy this to a text file for later use.
 
-> Do not Install your CNI to the cluster yet. I've tried this multiple times and it seems to not let the other nodes join the cluster. If it works for you, great. For me, I had to wait until the whole cluster is bootstrapped before applying the CNI. (Shown in a later step)
+> Do not Install your CNI to the cluster yet. I've tried this multiple times and it seems to not let the other nodes join the cluster. If it works for you, great. For me, I had to wait until the whole cluster was bootstrapped before applying the CNI. (Shown in a later step)
 {: .prompt-danger}
 
 ## 9. Using the first three lines copy the clusters new `~/.kube/config` to the first control plane's home directory for access
@@ -393,10 +386,10 @@ kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
 sudo cat ~/.kube/config
 ```
 
->14. You should now have a fully working kubernetes cluster, things to consider are downloading `metallb`, `rancher`, and `longhorn` to make your cluster a little more user friendly. These Guides can be found from [TechnoTim](https://techno-tim.github.io/)
+>14. You should now have a fully working Kubernetes cluster, things to consider are downloading `metallb`, `rancher`, and `longhorn` to make your cluster a little more user-friendly. These Guides can be found from [TechnoTim](https://techno-tim.github.io/)
 {: .prompt-tip}
 
-## 15. If you are going to install Rancher on this cluster, I noticed that the schedular and conroller manager said "unhealthy". They seem to work as normal, but a fix for this is as follows:
+## 15. If you are going to install Rancher on this cluster, I noticed that the schedular and controller manager said "unhealthy". They seem to work as normal, but a fix for this is as follows:
 
 1. 
         
