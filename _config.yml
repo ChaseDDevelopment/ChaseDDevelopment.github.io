@@ -21,9 +21,9 @@ timezone: America/Edmonton
 # jekyll-seo-tag settings › https://github.com/jekyll/jekyll-seo-tag/blob/master/docs/usage.md
 # ↓ --------------------------
 
-title: Guides # the main title
+title: Homelab Guides # the main title
 
-tagline: Homelab Guides and Documentation # it will display as the sub-title
+tagline: ChaseDDevelopment, Navigating the Homelab Labyrinth, One Guide at a Time. | 🇨🇦 # it will display as the sub-title
 
 description: >- # used by seo meta and the atom feed
   Homelab Guides and Documentation
@@ -40,7 +40,7 @@ twitter:
 social:
   # Change to your full name.
   # It will be displayed as the default author of the posts and the copyright owner in the Footer
-  name: Chase Dubauskas
+  name: ChaseDDevelopment
   email: Chase@ChaseDDevelopment.tech # change to your email address
   links:
     # The first element serves as the copyright owner's link
