@@ -30,7 +30,7 @@ concurrency:
 jobs:
   # Build job
   build:
-    runs-on: k3s-runner
+    runs-on: chaseddevelopment-githubio-runner
     steps:
       - name: Checkout
         uses: actions/checkout@v4
