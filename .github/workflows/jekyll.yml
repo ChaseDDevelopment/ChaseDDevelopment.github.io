@@ -30,7 +30,7 @@ concurrency:
 jobs:
   # Build job
   build:
-    runs-on: self-hosted
+    runs-on: k3s-runner
     steps:
       - name: Checkout
         uses: actions/checkout@v4
