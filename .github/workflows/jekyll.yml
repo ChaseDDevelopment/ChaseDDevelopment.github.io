@@ -37,7 +37,7 @@ jobs:
       - name: Test Echo
         run: echo "Hello, World!"
       - name: Setup Ruby
-        uses: ruby/setup-ruby@cacc9f1c0b3f4eb8a16a6bb0ed10897b43b9de49 # v1.176.0
+        uses: ruby/setup-ruby@2a9a743e19810b9f3c38060637daf594dbd7b37f # v1.186.0
         with:
           ruby-version: "3.2" # Not needed with a .ruby-version file
           bundler-cache: true # runs 'bundle install' and caches installed gems automatically
