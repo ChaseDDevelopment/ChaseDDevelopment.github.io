@@ -1,6 +1,6 @@
 {
   "name": "chaseddevelopment.github.io",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "Homelab Documentation site",
   "scripts": {
     "release": "standard-version",
