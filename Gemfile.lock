@@ -121,11 +121,11 @@ GEM
     rouge (4.2.1)
     ruby-rc4 (0.1.5)
     safe_yaml (1.0.5)
-    sass-embedded (1.77.1-arm64-darwin)
+    sass-embedded (1.77.5-arm64-darwin)
       google-protobuf (>= 3.25, < 5.0)
-    sass-embedded (1.77.1-x86_64-darwin)
+    sass-embedded (1.77.5-x86_64-darwin)
       google-protobuf (>= 3.25, < 5.0)
-    sass-embedded (1.77.1-x86_64-linux-gnu)
+    sass-embedded (1.77.5-x86_64-linux-gnu)
       google-protobuf (>= 3.25, < 5.0)
     strscan (3.1.0)
     terminal-table (3.0.2)
@@ -152,7 +152,7 @@ PLATFORMS
 DEPENDENCIES
   html-proofer (~> 5.0)
   jekyll-theme-chirpy (= 7.0.1)
-  sass-embedded (= 1.77.1)
+  sass-embedded (= 1.77.5)
   tzinfo (~> 2.0)
   tzinfo-data
   wdm (~> 0.1.1)
